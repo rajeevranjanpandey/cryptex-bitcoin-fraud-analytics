@@ -415,15 +415,42 @@
         </p>
       </div>
 
-      <!-- Master Figure 5: The Peeling Chain & Topological Fingerprint -->
+      <!-- Master Figure 5: Live Interactive Bitcoin Peeling Chain & Topological Contrast -->
       <div class="card" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">Figure 5: Empirical Money Laundering Peeling Chain (Elliptic 47-Node DAG) & Topological Contrast</div>
-          <div class="card-subtitle">Left: Real 9-Stage Laundering Funnel (Inflow → Peeling → Exchange Exit) • Right: Peeling Chains vs Commercial Exchange Batching</div>
+          <div class="card-title">Figure 5: Live Interactive Bitcoin Money Laundering Flow & Network Topology</div>
+          <div class="card-subtitle">Explore the 9-stage peeling chain interactively • Hover over any node to inspect transaction forensics</div>
         </div>
-        <div class="img-preview-box" style="text-align: center;">
+
+        <!-- Interactive Toolbar -->
+        <div class="graph-toolbar">
+          <span class="graph-toolbar-label">Interactive Stage Filters:</span>
+          <button class="graph-btn active" data-stage="all">🔘 Full 9-Stage Flow</button>
+          <button class="graph-btn" data-stage="stage1">🔴 Stage 1: Inflow (24 Seeds)</button>
+          <button class="graph-btn" data-stage="stage2">🟡 Stage 2: 7-Hop Peeling</button>
+          <button class="graph-btn" data-stage="stage3">🟢 Stage 3: Exchange Cash-Out</button>
+          <button class="graph-btn" data-stage="batching">🔵 Commercial Batching Hub</button>
+          <button class="graph-btn" id="btn-toggle-graph-img" style="margin-left: auto;">🖼️ View Publication Poster</button>
+        </div>
+
+        <!-- Interactive Canvas Box -->
+        <div class="interactive-graph-box" id="box-interactive-graph">
+          <canvas id="canvas-bitcoin-graph"></canvas>
+          <div class="graph-hud" id="graph-hud" style="opacity: 0;">
+            <div class="graph-hud-title" id="hud-title">⚡ Transaction Node</div>
+            <div class="graph-hud-stat"><span>Classification:</span> <strong id="hud-type">Illicit Flow</strong></div>
+            <div class="graph-hud-stat"><span>Stage:</span> <strong id="hud-stage">Stage 2: Peeling Hop 3</strong></div>
+            <div class="graph-hud-stat"><span>BTC Volume:</span> <strong id="hud-btc">14.28 BTC</strong></div>
+            <div class="graph-hud-stat"><span>Out-Degree:</span> <strong id="hud-deg">2 (1 peel + 1 change)</strong></div>
+            <div class="graph-hud-stat"><span>Risk Probability:</span> <strong id="hud-risk" style="color: #ef4444;">96.4%</strong></div>
+          </div>
+        </div>
+
+        <!-- Hidden Image Box (Toggleable) -->
+        <div class="img-preview-box" id="box-static-graph-img" style="display: none; text-align: center; margin-top: 12px;">
           <img src="figures/bitcoin_transaction_graph.png" alt="Bitcoin Forensic Peeling Chain & Topology Contrast" style="width: 100%; max-height: 560px; object-fit: contain;">
         </div>
+
         <div style="margin-top: 16px; padding: 14px 18px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 13px;">
           <strong style="color: #1e40af;">Analytical Forensic Breakdown:</strong>
           <span style="color: #1e3a8a;">
@@ -453,11 +480,16 @@
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Figure 7: Degree Distribution & Asymmetry Boxplot</div>
+            <div class="card-title">Figure 7: Live Interactive Degree Distribution Explorer</div>
             <div class="card-subtitle">Scale-Free Power Law (γ ≈ 2.1) & Peeling (k=2) vs Commercial Batching (k=50–452)</div>
           </div>
-          <div class="img-preview-box">
-            <img src="figures/degree_distribution.png" alt="Degree Distribution & Asymmetry Boxplot">
+          <div class="graph-toolbar" style="margin-bottom: 10px;">
+            <span class="graph-toolbar-label">View:</span>
+            <button class="graph-btn active" id="btn-deg-powerlaw">📊 Power-Law Curve</button>
+            <button class="graph-btn" id="btn-deg-asym">⚖️ Peeling vs Batching</button>
+          </div>
+          <div class="chart-wrapper" style="height: 280px;">
+            <canvas id="chart-degree-interactive"></canvas>
           </div>
           <div style="margin-top: 14px; padding: 12px 14px; background: #fefce8; border: 1px solid #fef08a; border-radius: 8px; font-size: 13px;">
             <strong style="color: #854d0e;">Analytical Observation (Scale-Free Topology):</strong>
@@ -478,15 +510,79 @@
         </p>
       </div>
 
+      <!-- Live Interactive Confusion Matrix Explorer -->
       <div class="card" style="margin-bottom: 24px;">
         <div class="card-header">
-          <div class="card-title">Four-Panel Confusion Matrix Benchmark (Test Steps 40–49)</div>
-          <div class="card-subtitle">Comparing True Positives (caught fraud) vs False Negatives (missed fraud) across 11,184 payments</div>
+          <div class="card-title">Figure 8: Live Interactive Confusion Matrix & Financial Loss Breakdown</div>
+          <div class="card-subtitle">Select any model to inspect True Positives, False Negatives, False Alarms, and Institutional Costs across 11,184 test transactions</div>
         </div>
-        <div class="img-preview-box" style="text-align: center;">
-          <img src="figures/confusion_matrices.png" alt="Confusion Matrix Benchmark" style="max-height: 520px;">
+
+        <!-- Model Selector Tabs -->
+        <div class="matrix-tab-bar">
+          <button class="matrix-tab-btn active" data-matrix-model="InContext_Proposed_Both">★ Proposed In-Context (Zero Retrain)</button>
+          <button class="matrix-tab-btn" data-matrix-model="Continuous_Retraining_LGBM">Continuous Retraining (LGBM)</button>
+          <button class="matrix-tab-btn" data-matrix-model="Static_LightGBM">Static LightGBM (Decayed)</button>
+          <button class="matrix-tab-btn" data-matrix-model="Static_XGBoost">Static XGBoost (Decayed)</button>
+          <button class="matrix-tab-btn" id="btn-toggle-matrix-img" style="margin-left: auto;">🖼️ View 4-Panel Static Poster</button>
         </div>
-        <div style="margin-top: 16px; padding: 14px 18px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; font-size: 13px;">
+
+        <!-- Dynamic Summary Bar -->
+        <div class="matrix-metrics-bar">
+          <div class="matrix-metric-item">
+            <span class="label">Fraud Recall</span>
+            <span class="val" id="mat-stat-recall" style="color: #059669;">74.18%</span>
+          </div>
+          <div class="matrix-metric-item">
+            <span class="label">Precision</span>
+            <span class="val" id="mat-stat-precision">42.70%</span>
+          </div>
+          <div class="matrix-metric-item">
+            <span class="label">F1-Score</span>
+            <span class="val" id="mat-stat-f1">0.4673</span>
+          </div>
+          <div class="matrix-metric-item">
+            <span class="label">Average Loss / Step</span>
+            <span class="val" id="mat-stat-cost" style="color: #059669;">$146.8K</span>
+          </div>
+          <div class="matrix-metric-item">
+            <span class="label">Total Loss (10 Steps)</span>
+            <span class="val" id="mat-stat-total-loss">$1.468M</span>
+          </div>
+        </div>
+
+        <!-- 2x2 Interactive Matrix Grid -->
+        <div class="matrix-grid-2x2" id="matrix-interactive-container">
+          <div class="matrix-quadrant tp">
+            <div class="quadrant-tag">✅ True Positives (Fraud Caught)</div>
+            <div class="quadrant-value" id="mat-tp-val">495</div>
+            <div class="quadrant-desc">Illicit transactions accurately flagged & frozen. Saved the institution from direct theft & regulatory fines.</div>
+          </div>
+
+          <div class="matrix-quadrant fn">
+            <div class="quadrant-tag">🚨 False Negatives (Missed Fraud)</div>
+            <div class="quadrant-value" id="mat-fn-val">141</div>
+            <div class="quadrant-desc">Uncaught money laundering flows. Incurs severe $10,000 regulatory penalties and irreversible asset loss.</div>
+          </div>
+
+          <div class="matrix-quadrant fp">
+            <div class="quadrant-tag">⚠️ False Positives (False Alarms)</div>
+            <div class="quadrant-value" id="mat-fp-val">582</div>
+            <div class="quadrant-desc">Licit payments flagged for review. Incurs $100 compliance friction and analyst manual investigation time.</div>
+          </div>
+
+          <div class="matrix-quadrant tn">
+            <div class="quadrant-tag">🛡️ True Negatives (Licit Cleared)</div>
+            <div class="quadrant-value" id="mat-tn-val">9,966</div>
+            <div class="quadrant-desc">Legitimate customer payments cleared seamlessly with zero friction.</div>
+          </div>
+        </div>
+
+        <!-- Static 4-panel image (toggleable) -->
+        <div class="img-preview-box" id="box-static-matrix-img" style="display: none; text-align: center; margin-bottom: 16px;">
+          <img src="figures/confusion_matrices.png" alt="Confusion Matrix Benchmark" style="max-height: 500px;">
+        </div>
+
+        <div style="margin-top: 14px; padding: 14px 18px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; font-size: 13px;">
           <strong style="color: #991b1b;">Analytical Observation (Missed Fraud Reality):</strong>
           <span style="color: #7f1d1d;">
             Across 11,184 test transactions containing 636 true illicit payments, the <strong>Proposed In-Context Model captures 472 illicit flows (74.18% recall)</strong>. In contrast, <strong>Static LightGBM misses 448 illicit payments</strong> (capturing only 188, 29.62% recall) and <strong>Static XGBoost misses 442 illicit payments</strong> (30.53% recall). Traditional static models allow over 70% of money laundering activity to slip through undetected.
@@ -494,15 +590,15 @@
         </div>
       </div>
 
-      <!-- Explainable AI (XAI) Cards -->
+      <!-- Live Interactive Explainable AI (XAI) Cards -->
       <div class="card-grid-2">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Tree-SHAP Global Feature Importance (XAI)</div>
-            <div class="card-subtitle">Mean absolute SHAP impact aligning with IEEE Paper 101165 Fig. 6(b)</div>
+            <div class="card-title">Figure 9: Live Interactive Tree-SHAP Feature Importance (XAI)</div>
+            <div class="card-subtitle">Mean absolute SHAP impact aligning with IEEE Paper 101165 Fig. 6(b) • Hover for forensic meaning</div>
           </div>
-          <div class="img-preview-box">
-            <img src="figures/shap_summary_barplot.png" alt="SHAP Feature Importance Bar Plot">
+          <div class="chart-wrapper" style="height: 380px;">
+            <canvas id="chart-shap-interactive"></canvas>
           </div>
           <div style="margin-top: 14px; padding: 12px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 13px;">
             <strong style="color: #1e40af;">Analytical Observation:</strong>
@@ -514,7 +610,7 @@
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">SHAP Beeswarm Value Distribution</div>
+            <div class="card-title">Figure 10: SHAP Beeswarm Directionality & Regulatory Governance</div>
             <div class="card-subtitle">Red = High feature value • Blue = Low feature value • Positive SHAP pushes toward Fraud</div>
           </div>
           <div class="img-preview-box">
