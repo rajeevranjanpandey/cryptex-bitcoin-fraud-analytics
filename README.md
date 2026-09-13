@@ -218,11 +218,35 @@ We built a **pure-white background executive dashboard** designed for C-suite ri
 
 ---
 
+## 🕸️ Forensic Graph Analytics: Peeling Chains vs. Exchange Batching
+
+Rather than presenting an unreadable force-directed "hairball," our forensic graph pipeline uncovers the fundamental topological contrast governing Bitcoin money movement:
+
+### 1. The 9-Stage Empirical Money Laundering Funnel (Figure 5A)
+Using a 47-node connected directed acyclic graph (DAG) extracted directly from the Elliptic dataset:
+- **Stage 1 (Illicit Inflow)**: 24 tainted transaction sources funnel dirty Bitcoin from darknet vendors and ransomware ransoms into holding wallets.
+- **Stage 2 (Sequential 1-to-2 Peeling Chains)**: Criminal syndicates structure transactions across 7 sequential hops. At each hop, a small amount is peeled off to intermediate accounts, while the remaining change balance is forwarded to a new address. This obfuscates provenance and keeps individual transactions below the $10,000 regulatory reporting limit.
+- **Stage 3 (Cash-Out Funnel)**: After sufficient layering, washed funds are recombined and deposited into legitimate cryptocurrency exchange wallets.
+
+### 2. Topological Fingerprint Contrast (Figure 5B)
+| Forensic Dimension | Illicit Money Laundering (Peeling Chain) | Legitimate Commercial Commerce (Exchange Batching) |
+| :--- | :--- | :--- |
+| **Graph Topology** | **Comb / Snake Sequential Trail** | **Star / Broadcast Fan-out** |
+| **Path Depth** | **Deep (6 to 15+ sequential hops)** | **Shallow (1 to 2 hops max)** |
+| **Out-Degree per Transaction** | **Strictly Low (Out-Degree = 2)** | **Massive (Out-Degree = 50 to 452 outputs per tx)** |
+| **Fee-to-Volume Ratio** | **High urgency fee (`feat_53`) to ensure fast block inclusion** | **Optimized, low batch fee per recipient** |
+
+### 3. The Step 43 AlphaBay Structural Shock (Figure 6)
+- **Step 42 (Pre-Takedown)**: Active AlphaBay and Hansa escrow clusters; 11.10% illicit ratio (239 illicit txs) and connected components reaching 940 nodes.
+- **Step 43 (Post-Takedown)**: Marketplaces seized by the FBI and Europol. Illicit activity collapsed by **89.9%** (down to 24 illicit txs). The network fragmented into isolated low-fee singletons, driving the Population Stability Index to **0.8099**.
+
+---
+
 ## 🏃 Quickstart & Reproduction Guide
 
 ### 1. Clone & Set Up Environment
 ```bash
-git clone https://github.com/rajeevpandey/cryptex-bitcoin-fraud-analytics.git
+git clone https://github.com/rajeevranjanpandey/cryptex-bitcoin-fraud-analytics.git
 cd cryptex-bitcoin-fraud-analytics
 
 # Create and activate Python virtual environment

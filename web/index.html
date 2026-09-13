@@ -134,8 +134,8 @@
           <span class="btn-number-tag">Part 6</span>
           <span class="btn-icon">🕸️</span>
         </div>
-        <div class="btn-title">6. Bitcoin Transaction Graph</div>
-        <div class="btn-desc">Directed payment dependencies, peel chains & clustering topology</div>
+        <div class="btn-title">6. Forensic Network & Peeling Chains</div>
+        <div class="btn-desc">Real 9-stage laundering flow, commercial batching contrast & Step 43 shock</div>
       </button>
 
       <button class="story-card-btn" data-tab="story-matrix">
@@ -406,44 +406,63 @@
       </div>
     </section>
 
-    <!-- CHAPTER 6: Transaction Graph -->
+    <!-- CHAPTER 6: Forensic Network & Peeling Chains -->
     <section id="story-graph" class="chapter-pane">
       <div class="story-callout">
-        <h3>Chapter 6: The Bitcoin Transaction Network Graph Topology</h3>
+        <h3>Chapter 6: The Forensic Anatomy of Bitcoin Money Laundering</h3>
         <p>
-          Bitcoin transactions form a directed graph where money flows from inputs to outputs. Below is the empirical transaction network reconstructed from 234,355 payment edges. Illicit addresses form distinctive fan-out peel chains to layer and disperse stolen funds across intermediate addresses.
+          Unlike fiat accounts where money is stored in balance ledgers, Bitcoin transactions form a <strong>directed dependency graph</strong> where outputs of previous transactions become inputs to future ones. Below, we examine the empirical payment graph reconstructed from <strong>234,355 directed edges</strong>. Rather than an unreadable "hairball," our forensic analysis uncovers the exact 9-stage peeling chain and structural contrast that distinguishes criminal evasion from legitimate exchange commerce.
         </p>
       </div>
 
+      <!-- Master Figure 5: The Peeling Chain & Topological Fingerprint -->
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="card-header">
+          <div class="card-title">Figure 5: Empirical Money Laundering Peeling Chain (Elliptic 47-Node DAG) & Topological Contrast</div>
+          <div class="card-subtitle">Left: Real 9-Stage Laundering Funnel (Inflow → Peeling → Exchange Exit) • Right: Peeling Chains vs Commercial Exchange Batching</div>
+        </div>
+        <div class="img-preview-box" style="text-align: center;">
+          <img src="figures/bitcoin_transaction_graph.png" alt="Bitcoin Forensic Peeling Chain & Topology Contrast" style="width: 100%; max-height: 560px; object-fit: contain;">
+        </div>
+        <div style="margin-top: 16px; padding: 14px 18px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 13px;">
+          <strong style="color: #1e40af;">Analytical Forensic Breakdown:</strong>
+          <span style="color: #1e3a8a;">
+            <strong>(A) Real 9-Stage Laundering Flow:</strong> Criminal proceeds from 24 illicit sources (Stage 1) are structured through 7 sequential hops of 1-to-2 peeling chains (Stage 2). At each hop, a small amount is peeled off while the bulk change address is forwarded to the next hop to evade anti-structuring AML thresholds. Finally, funds are funnelled into an exchange deposit wallet (Stage 3).<br>
+            <strong>(B) The Topological Fingerprint:</strong> Criminals MUST use deep, narrow combs (Depth = 6–15+ hops, Out-Degree = 2) to obfuscate provenance. In contrast, legitimate cryptocurrency exchanges (e.g., Coinbase, Binance) use star broadcast hubs (Depth = 1 hop, Out-Degree = 50 to 452) to batch hundreds of customer payouts in a single low-fee transaction.
+          </span>
+        </div>
+      </div>
+
+      <!-- Figures 6 & 7: Structural Drift Shock & Degree Distribution -->
       <div class="card-grid-2">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Bitcoin Transaction Graph: Peel Chains & Clusters</div>
-            <div class="card-subtitle">Crimson Red = Confirmed Illicit • Cyan = Legitimate Wallets / Exchanges</div>
+            <div class="card-title">Figure 6: Structural Network Shock (Step 42 vs Step 43)</div>
+            <div class="card-subtitle">AlphaBay Seizure: Dense Darknet Clusters (Left) vs Post-Takedown Fragmentation (Right)</div>
           </div>
           <div class="img-preview-box">
-            <img src="figures/bitcoin_transaction_graph.png" alt="Bitcoin Transaction Network Graph">
+            <img src="figures/network_drift_comparison.png" alt="Step 42 vs Step 43 Network Comparison">
           </div>
-          <div style="margin-top: 14px; padding: 12px 14px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 13px;">
-            <strong style="color: #1e40af;">Analytical Observation:</strong>
-            <span style="color: #1e3a8a;">
-              Illicit flows (Crimson) organize into distinctive <strong>peeling chains</strong>—sequential 1-to-2 and 1-to-N splits used to rapidly transfer and obfuscate stolen coins before consolidating at mixing services or fiat on-ramps.
+          <div style="margin-top: 14px; padding: 12px 14px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; font-size: 13px;">
+            <strong style="color: #991b1b;">Analytical Observation (Marketplace Disruption):</strong>
+            <span style="color: #7f1d1d;">
+              At Step 42, active AlphaBay/Hansa escrow hubs maintain an illicit ratio of 11.10% (239 txs) with connected components up to 940 nodes. Following the international takedown at Step 43, illicit transactions collapse by 89.9% (to 24 txs) and the network disintegrates into isolated low-fee singletons, driving the Population Stability Index to 0.8099.
             </span>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Heavy-Tailed Scale-Free Degree Distribution</div>
-            <div class="card-subtitle">In-Degree vs Out-Degree log distribution capturing peel chain branching</div>
+            <div class="card-title">Figure 7: Degree Distribution & Asymmetry Boxplot</div>
+            <div class="card-subtitle">Scale-Free Power Law (γ ≈ 2.1) & Peeling (k=2) vs Commercial Batching (k=50–452)</div>
           </div>
           <div class="img-preview-box">
-            <img src="figures/degree_distribution.png" alt="Degree Distribution">
+            <img src="figures/degree_distribution.png" alt="Degree Distribution & Asymmetry Boxplot">
           </div>
           <div style="margin-top: 14px; padding: 12px 14px; background: #fefce8; border: 1px solid #fef08a; border-radius: 8px; font-size: 13px;">
-            <strong style="color: #854d0e;">Analytical Observation:</strong>
+            <strong style="color: #854d0e;">Analytical Observation (Scale-Free Topology):</strong>
             <span style="color: #713f12;">
-              The transaction graph exhibits a power-law scale-free structure (γ ≈ 2.1). The vast majority of illicit nodes maintain low in-degree (1–2) but high out-degree fan-out, a classic signature of programmatic asset laundering.
+              The transaction graph obeys a heavy-tailed power law ($P(k) \sim k^{-\gamma}$, $\gamma \approx 2.1$). While 98% of illicit transactions maintain out-degree capped at 2 (1-to-2 structured splits), legitimate commercial exchange wallets act as massive broadcasting hubs with out-degrees reaching up to 452 outputs per transaction.
             </span>
           </div>
         </div>
