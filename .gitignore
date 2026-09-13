@@ -1,0 +1,19 @@
+# Python & Environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.DS_Store
+
+# Data files (>100MB exceeds GitHub push limit)
+data/elliptic_labeled.csv
+data/elliptic_txs_features.csv
+*.zip
+*.tar.gz
+
+# IDE & system artifacts
+.idea/
+.vscode/
+*.swp
+*.swo
