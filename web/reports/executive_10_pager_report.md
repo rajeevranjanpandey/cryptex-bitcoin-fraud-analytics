@@ -103,12 +103,12 @@ Faced with performance decay, classical engineering doctrine prescribes: *"Simpl
 
 ```mermaid
 flowchart LR
-    A[New Fraud Pattern Emerges] --> B[Forensic Investigation & Manual Labeling: 4-8 Weeks]
-    B --> C[Model Retraining & Pipeline Re-run: 1 Week]
-    C --> D[Model Risk Management MRM & SR 11-7 Validation: 6-12 Weeks]
-    D --> E[Risk Committee Approval & Executive Sign-off: 2 Weeks]
-    E --> F[Staging, Canary Deployment & Production Swap: 2 Weeks]
-    F --> G[Production Deployment: Model is Already 3 Months Outdated!]
+    A["New Fraud Pattern Emerges"] --> B["Forensic Investigation & Manual Labeling: 4-8 Weeks"]
+    B --> C["Model Retraining & Pipeline Re-run: 1 Week"]
+    C --> D["Model Risk Management MRM & SR 11-7 Validation: 6-12 Weeks"]
+    D --> E["Risk Committee Approval & Executive Sign-off: 2 Weeks"]
+    E --> F["Staging, Canary Deployment & Production Swap: 2 Weeks"]
+    F --> G["Production Deployment: Model is Already 3 Months Outdated!"]
 ```
 
 ### 3.1 The Five Pillars of Retraining Latency
@@ -184,14 +184,14 @@ A core pillar adopted from Semon et al. (IEEE QPAIN 2026, Paper ID 101165) is th
 
 ```mermaid
 flowchart TD
-    Raw[165 Raw Elliptic Bitcoin Features] --> F1[Chi-Square Test: Univariate Statistical Dependence]
-    Raw --> F2[Recursive Feature Elimination RFE: Tree-Based Backward Pruning]
-    Raw --> F3[Tree-SHAP: Game-Theoretic Marginal Contribution]
-    F1 --> Borda[Borda Count Aggregation Engine]
+    Raw["165 Raw Elliptic Bitcoin Features"] --> F1["Chi-Square Test: Univariate Statistical Dependence"]
+    Raw --> F2["Recursive Feature Elimination (RFE): Backward Pruning"]
+    Raw --> F3["Tree-SHAP: Marginal Contribution"]
+    F1 --> Borda["Borda Count Aggregation Engine"]
     F2 --> Borda
     F3 --> Borda
-    Borda --> Ranked[Unified Consensus Feature Ranking]
-    Ranked --> Top25[Top 25 Optimal Feature Subspace]
+    Borda --> Ranked["Unified Consensus Feature Ranking"]
+    Ranked --> Top25["Top 25 Optimal Feature Subspace"]
 ```
 
 ### 5.1 The Three Constituent Selectors
@@ -346,10 +346,10 @@ Modern financial regulators (FinCEN, the Federal Reserve, the European Banking A
 
 ```mermaid
 flowchart LR
-    Tx[Flagged Illicit Transaction] --> Model[In-Context Inference Engine]
-    Model --> SHAP[Tree-SHAP Decomposition Engine]
-    SHAP --> Narrative[Automated Compliance Narrative Generator]
-    Narrative --> SAR[FinCEN SAR XML Filing Package]
+    Tx["Flagged Illicit Transaction"] --> Model["In-Context Inference Engine"]
+    Model --> SHAP["Tree-SHAP Decomposition Engine"]
+    SHAP --> Narrative["Automated Compliance Narrative Generator"]
+    Narrative --> SAR["FinCEN SAR XML Filing Package"]
 ```
 
 ### 9.1 Global Feature Importance via Tree-SHAP

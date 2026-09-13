@@ -36,50 +36,55 @@ The diagram below illustrates how incoming Bitcoin transactions traverse the fea
 ```mermaid
 flowchart TD
     subgraph INGESTION ["1. Blockchain Data Ingestion & Graph Construction"]
-        A[Raw Bitcoin Blockchain Stream] --> B[Elliptic Dataset: 203,769 Txs]
-        B --> C[Directed Multigraph G = V, E: 234,355 Edges]
-        C --> D[166 Features Extracted:\nLocal Volume, Fees, In/Out-Degrees,\n1-Hop & 2-Hop Graph Aggregations]
+        A["Raw Bitcoin Blockchain Stream"] --> B["Elliptic Dataset: 203,769 Txs"]
+        B --> C["Directed Multigraph G = (V, E): 234,355 Edges"]
+        C --> D["166 Features Extracted:<br/>Local Volume, Fees, In/Out-Degrees,<br/>1-Hop & 2-Hop Graph Aggregations"]
     end
 
     subgraph DRIFT_MONITOR ["2. Temporal Splitting & Drift Surveillance"]
-        D --> E[Historical Baseline\nSteps 1 to 34]
-        D --> F[Validation & Tuning\nSteps 35 to 39]
-        D --> G[Live Forward Test Stream\nSteps 40 to 49: 11,184 Txs]
-        G --> H{Population Stability Index PSI\nvs Reference Baseline}
-        H -->|PSI > 0.20 Shock| I[Step 43 AlphaBay Seizure Alarm\nPSI = 0.8099: Severe Structural Break]
+        D --> E["Historical Baseline (Steps 1 to 34)"]
+        D --> F["Validation & Tuning (Steps 35 to 39)"]
+        D --> G["Live Forward Test Stream (Steps 40 to 49: 11,184 Txs)"]
+        G --> H{"Population Stability Index (PSI)<br/>vs Reference Baseline"}
+        H -->|PSI > 0.20 Shock| I["Step 43 AlphaBay Seizure Alarm<br/>PSI = 0.8099: Severe Structural Break"]
     end
 
     subgraph SELECTION ["3. Feature Optimization (Paper 101165)"]
-        E --> J[Univariate Chi-Square Criterion]
-        E --> K[Recursive Feature Elimination RFE]
-        E --> L[Tree-SHAP Feature Attribution]
-        J & K & L --> M[Borda Count Voting Ensemble Consensus]
-        M --> N[Top 25 Consensus Features Selected\nRank 1: feat_53 Aggregated Output Volume]
-        N --> O[Optuna Bayesian Hyperparameter Tuning\nTree-Structured Parzen Estimators TPE]
+        E --> J["Univariate Chi-Square Criterion"]
+        E --> K["Recursive Feature Elimination (RFE)"]
+        E --> L["Tree-SHAP Feature Attribution"]
+        J --> M["Borda Count Voting Ensemble"]
+        K --> M
+        L --> M
+        M --> N["Top 25 Consensus Features Selected<br/>Rank 1: feat_53 Aggregated Output Volume"]
+        N --> O["Optuna Bayesian Hyperparameter Tuning<br/>Tree-Structured Parzen Estimators (TPE)"]
     end
 
     subgraph IN_CONTEXT_ENGINE ["4. Proposed In-Context Exemplar Retrieval (Zero Retrain)"]
-        O --> P[Base LightGBM Architecture\nModel Weights Completely Frozen]
-        G --> Q[Incoming Transaction x_t at Step t]
-        R[(Historical Exemplar Pool:\nConfirmed Labeled Past Cases)] --> S[Dual Scoring Retrieval Engine]
+        O --> P["Base LightGBM Architecture<br/>Model Weights Completely Frozen"]
+        G --> Q["Incoming Transaction x_t at Step t"]
+        R[("Historical Exemplar Pool:<br/>Confirmed Labeled Past Cases")] --> S["Dual Scoring Retrieval Engine"]
         
         Q --> S
         S -->|Component 1: Recency Score| T["R_j = 1 / (t - tau + 1)"]
         S -->|Component 2: Similarity Score| U["S_j = Cosine(x_j, Centroid_t)"]
-        T & U --> V[Composite Score = R_j + S_j]
-        V --> W[Stratified Context Buffer K=2,000:\n500 Illicit + 1,500 Licit Exemplars]
-        W & P --> X[In-Context Dynamic Inference Engine]
-        X --> Y[Calibrated Illicit Probability P_fraud]
+        T --> V["Composite Score = R_j + S_j"]
+        U --> V
+        V --> W["Stratified Context Buffer K=2,000:<br/>500 Illicit + 1,500 Licit Exemplars"]
+        W --> X["In-Context Dynamic Inference Engine"]
+        P --> X
+        X --> Y["Calibrated Illicit Probability P_fraud"]
     end
 
     subgraph COMPLIANCE ["5. Institutional Decision & Regulatory Explainability"]
-        Y --> Z{Decision Threshold P > 0.35}
-        Z -->|High Risk| AA[🚨 Flag & Block Transaction]
-        Z -->|Low Risk| AB[✅ Release & Clear Transaction]
-        AA --> AC[Tree-SHAP Explainability Engine]
-        AC --> AD[Automated FinCEN SAR Audit Narrative:\nTop 5 Contributing Factors feat_59, feat_53, feat_58]
-        AA & AB --> AE[Institutional Financial Loss Accounting:\nCFN = $10,000 | CFP = $100]
-        AE --> AF[Executive Storytelling Dashboard\nlocalhost:8080 Pure White UI]
+        Y --> Z{"Decision Threshold P > 0.35"}
+        Z -->|High Risk| AA["🚨 Flag & Block Transaction"]
+        Z -->|Low Risk| AB["✅ Release & Clear Transaction"]
+        AA --> AC["Tree-SHAP Explainability Engine"]
+        AC --> AD["Automated FinCEN SAR Audit Narrative:<br/>Top 5 Factors: feat_59, feat_53, feat_58"]
+        AA --> AE["Institutional Financial Loss Accounting:<br/>C_FN = $10,000 / C_FP = $100"]
+        AB --> AE
+        AE --> AF["Executive Storytelling Dashboard<br/>localhost:8080 Pure White UI"]
     end
 
     style I fill:#fecaca,stroke:#dc2626,stroke-width:2px;
