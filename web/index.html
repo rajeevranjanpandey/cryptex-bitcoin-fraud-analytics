@@ -424,12 +424,12 @@
 
         <!-- Interactive Toolbar -->
         <div class="graph-toolbar">
-          <span class="graph-toolbar-label">Interactive Stage Filters:</span>
-          <button class="graph-btn active" data-stage="all">🔘 Full 9-Stage Flow</button>
-          <button class="graph-btn" data-stage="stage1">🔴 Stage 1: Inflow (24 Seeds)</button>
-          <button class="graph-btn" data-stage="stage2">🟡 Stage 2: 7-Hop Peeling</button>
-          <button class="graph-btn" data-stage="stage3">🟢 Stage 3: Exchange Cash-Out</button>
-          <button class="graph-btn" data-stage="batching">🔵 Commercial Batching Hub</button>
+          <span class="graph-toolbar-label">Topological Views & Filters:</span>
+          <button class="graph-btn active" data-stage="all">🔘 Both Topologies (Side-by-Side Contrast)</button>
+          <button class="graph-btn" data-stage="peeling">🔴 Illicit 9-Stage Peeling Chain</button>
+          <button class="graph-btn" data-stage="batching">🔵 Commercial Batching Star Hub (452 Out)</button>
+          <button class="graph-btn" data-stage="stage2">🟡 Focus: 7 Peeling Hops</button>
+          <button class="graph-btn" data-stage="stage3">🟢 Focus: Cash-Out Liquidation</button>
           <button class="graph-btn" id="btn-toggle-graph-img" style="margin-left: auto;">🖼️ View Publication Poster</button>
         </div>
 
@@ -439,9 +439,10 @@
           <div class="graph-hud" id="graph-hud" style="opacity: 0;">
             <div class="graph-hud-title" id="hud-title">⚡ Transaction Node</div>
             <div class="graph-hud-stat"><span>Classification:</span> <strong id="hud-type">Illicit Flow</strong></div>
-            <div class="graph-hud-stat"><span>Stage:</span> <strong id="hud-stage">Stage 2: Peeling Hop 3</strong></div>
+            <div class="graph-hud-stat"><span>Topology:</span> <strong id="hud-mech" style="color: #60a5fa;">1-to-2 Peeling Comb</strong></div>
+            <div class="graph-hud-stat"><span>Stage / Role:</span> <strong id="hud-stage">Stage 2: Peeling Hop 3</strong></div>
             <div class="graph-hud-stat"><span>BTC Volume:</span> <strong id="hud-btc">14.28 BTC</strong></div>
-            <div class="graph-hud-stat"><span>Out-Degree:</span> <strong id="hud-deg">2 (1 peel + 1 change)</strong></div>
+            <div class="graph-hud-stat"><span>Degree (In / Out):</span> <strong id="hud-deg">1 In / 2 Out</strong></div>
             <div class="graph-hud-stat"><span>Risk Probability:</span> <strong id="hud-risk" style="color: #ef4444;">96.4%</strong></div>
           </div>
         </div>

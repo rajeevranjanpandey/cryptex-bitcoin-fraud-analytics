@@ -747,30 +747,29 @@ tr.highlight-winner td {
 #canvas-bitcoin-graph {
   display: block;
   width: 100%;
-  height: 480px;
-  cursor: grab;
+  height: 540px;
+  cursor: crosshair;
 }
 
-#canvas-bitcoin-graph:active {
-  cursor: grabbing;
-}
-
-/* Graph HUD Tooltip */
+/* Floating Synchronized Graph HUD Tooltip */
 .graph-hud {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  background: rgba(15, 23, 42, 0.92);
+  top: 0;
+  left: 0;
+  background: rgba(15, 23, 42, 0.94);
   color: #ffffff;
   padding: 12px 16px;
   border-radius: var(--radius-sm);
   font-size: 12px;
-  max-width: 280px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  width: 300px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
   pointer-events: none;
-  backdrop-filter: blur(8px);
-  z-index: 10;
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  opacity: 0;
+  transform: translate(15px, 15px);
   transition: opacity 0.15s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .graph-hud-title {

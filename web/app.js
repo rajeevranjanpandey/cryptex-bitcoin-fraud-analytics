@@ -544,6 +544,7 @@ function initInteractiveBitcoinGraph() {
   const hud = document.getElementById('graph-hud');
   const hudTitle = document.getElementById('hud-title');
   const hudType = document.getElementById('hud-type');
+  const hudMech = document.getElementById('hud-mech');
   const hudStage = document.getElementById('hud-stage');
   const hudBtc = document.getElementById('hud-btc');
   const hudDeg = document.getElementById('hud-deg');
@@ -551,7 +552,6 @@ function initInteractiveBitcoinGraph() {
 
   // Setup toggle to static publication image
   const btnToggleImg = document.getElementById('btn-toggle-graph-img');
-  const boxGraph = document.getElementById('box-interactive-graph');
   const boxStaticImg = document.getElementById('box-static-graph-img');
   if (btnToggleImg && boxStaticImg) {
     btnToggleImg.onclick = () => {
@@ -565,7 +565,7 @@ function initInteractiveBitcoinGraph() {
     };
   }
 
-  // Active stage filter
+  // Active view filter
   let currentStage = 'all';
   const stageBtns = document.querySelectorAll('[data-stage]');
   stageBtns.forEach(btn => {
@@ -576,39 +576,40 @@ function initInteractiveBitcoinGraph() {
     };
   });
 
-  // Graph topology definition (47 nodes in laundering DAG + commercial batching star)
+  // Graph topology definition (Nodes & Edges)
   const nodes = [];
   const edges = [];
 
-  // Stage 1: Inflow Sources (Representative illicit feeds S1..S6 converging to Aggregator)
+  // -------------------------------------------------------------
+  // ZONE A: 9-Stage Illicit Laundering Peeling Comb (y: 20 to 220)
+  // -------------------------------------------------------------
+  // Stage 1 Inflow Sources
   const sources = [
-    { id: 'S1', x: 60, y: 80, label: 'Darknet Vendor #1', stage: 'stage1', btc: '4.50 BTC', outDeg: '1', risk: '99.4%', type: 'Illicit Inflow' },
-    { id: 'S2', x: 60, y: 140, label: 'Ransomware Wallet', stage: 'stage1', btc: '3.80 BTC', outDeg: '1', risk: '98.9%', type: 'Illicit Inflow' },
-    { id: 'S3', x: 60, y: 200, label: 'AlphaBay Escrow Feed', stage: 'stage1', btc: '2.90 BTC', outDeg: '1', risk: '99.1%', type: 'Illicit Inflow' },
-    { id: 'S4', x: 60, y: 260, label: 'Mule Aggregator A', stage: 'stage1', btc: '2.10 BTC', outDeg: '1', risk: '97.5%', type: 'Illicit Inflow' },
-    { id: 'S5', x: 60, y: 320, label: 'Phishing Drainer B', stage: 'stage1', btc: '1.70 BTC', outDeg: '1', risk: '98.2%', type: 'Illicit Inflow' },
+    { id: 'S1', x: 70, y: 55, label: 'Darknet Vendor #1', stage: 'peeling', btc: '4.50 BTC', inDeg: '0', outDeg: '1', risk: '99.4%', type: 'Illicit Inflow', mech: 'Feeder Source' },
+    { id: 'S2', x: 70, y: 90, label: 'Ransomware Wallet', stage: 'peeling', btc: '3.80 BTC', inDeg: '0', outDeg: '1', risk: '98.9%', type: 'Illicit Inflow', mech: 'Feeder Source' },
+    { id: 'S3', x: 70, y: 125, label: 'AlphaBay Escrow Feed', stage: 'peeling', btc: '2.90 BTC', inDeg: '0', outDeg: '1', risk: '99.1%', type: 'Illicit Inflow', mech: 'Feeder Source' },
+    { id: 'S4', x: 70, y: 160, label: 'Mule Aggregator A', stage: 'peeling', btc: '2.10 BTC', inDeg: '0', outDeg: '1', risk: '97.5%', type: 'Illicit Inflow', mech: 'Feeder Source' },
+    { id: 'S5', x: 70, y: 195, label: 'Phishing Drainer B', stage: 'peeling', btc: '1.70 BTC', inDeg: '0', outDeg: '1', risk: '98.2%', type: 'Illicit Inflow', mech: 'Feeder Source' },
   ];
   sources.forEach(s => nodes.push(s));
 
-  // Inflow Aggregator node
-  const agg = { id: 'AGG', x: 170, y: 200, label: 'Inflow Pool (Aggregator)', stage: 'stage1', btc: '15.00 BTC', outDeg: '1 to Peeling Chain', risk: '99.2%', type: 'Illicit Funnel' };
+  // Inflow Aggregator Pool
+  const agg = { id: 'AGG', x: 180, y: 125, label: 'Inflow Aggregator Pool', stage: 'peeling', btc: '15.00 BTC', inDeg: '5', outDeg: '1 to Peeling Chain', risk: '99.2%', type: 'Illicit Funnel Pool', mech: 'Funnel Aggregator' };
   nodes.push(agg);
-  sources.forEach(s => edges.push({ from: s.id, to: 'AGG', stage: 'stage1', flow: s.btc }));
+  sources.forEach(s => edges.push({ from: s.id, to: 'AGG', stage: 'peeling', flow: s.btc }));
 
-  // Stage 2: 7-Hop Peeling Chain
-  // At each hop, 1 peel output (small amount) peeled downward to a cash/mule address,
-  // while the change address forwards the bulk amount rightward to the next hop.
+  // Stage 2: 7-Hop Peeling Chain Backbone
   const peelHops = [
-    { id: 'P1', x: 280, y: 200, label: 'Peel Hop 1', btc: '14.55 BTC', peelBtc: '0.45 BTC', risk: '96.5%' },
-    { id: 'P2', x: 370, y: 200, label: 'Peel Hop 2', btc: '14.15 BTC', peelBtc: '0.40 BTC', risk: '95.8%' },
-    { id: 'P3', x: 460, y: 200, label: 'Peel Hop 3', btc: '13.77 BTC', peelBtc: '0.38 BTC', risk: '96.1%' },
-    { id: 'P4', x: 550, y: 200, label: 'Peel Hop 4', btc: '13.42 BTC', peelBtc: '0.35 BTC', risk: '94.9%' },
-    { id: 'P5', x: 640, y: 200, label: 'Peel Hop 5', btc: '13.00 BTC', peelBtc: '0.42 BTC', risk: '95.2%' },
-    { id: 'P6', x: 730, y: 200, label: 'Peel Hop 6', btc: '12.55 BTC', peelBtc: '0.45 BTC', risk: '94.7%' },
-    { id: 'P7', x: 820, y: 200, label: 'Peel Hop 7', btc: '12.10 BTC', peelBtc: '0.45 BTC', risk: '94.3%' }
+    { id: 'P1', x: 275, y: 105, label: 'Peel Hop 1', btc: '14.55 BTC', peelBtc: '0.45 BTC', risk: '96.5%' },
+    { id: 'P2', x: 365, y: 105, label: 'Peel Hop 2', btc: '14.15 BTC', peelBtc: '0.40 BTC', risk: '95.8%' },
+    { id: 'P3', x: 455, y: 105, label: 'Peel Hop 3', btc: '13.77 BTC', peelBtc: '0.38 BTC', risk: '96.1%' },
+    { id: 'P4', x: 545, y: 105, label: 'Peel Hop 4', btc: '13.42 BTC', peelBtc: '0.35 BTC', risk: '94.9%' },
+    { id: 'P5', x: 635, y: 105, label: 'Peel Hop 5', btc: '13.00 BTC', peelBtc: '0.42 BTC', risk: '95.2%' },
+    { id: 'P6', x: 725, y: 105, label: 'Peel Hop 6', btc: '12.55 BTC', peelBtc: '0.45 BTC', risk: '94.7%' },
+    { id: 'P7', x: 815, y: 105, label: 'Peel Hop 7', btc: '12.10 BTC', peelBtc: '0.45 BTC', risk: '94.3%' }
   ];
 
-  edges.push({ from: 'AGG', to: 'P1', stage: 'stage2', flow: '15.00 BTC' });
+  edges.push({ from: 'AGG', to: 'P1', stage: 'peeling', flow: '15.00 BTC' });
 
   peelHops.forEach((hop, idx) => {
     nodes.push({
@@ -617,64 +618,94 @@ function initInteractiveBitcoinGraph() {
       y: hop.y,
       label: hop.label,
       stage: 'stage2',
+      zone: 'peeling',
       btc: hop.btc,
-      outDeg: '2 (1 peel + 1 forward)',
+      inDeg: '1',
+      outDeg: '2 (1 Peel + 1 Forward)',
       risk: hop.risk,
-      type: 'Structured Peeling Node'
+      type: 'Structured Money Laundering',
+      mech: '1-to-2 Peeling Comb'
     });
 
-    // Peeling mule output (peeled off downward)
-    const peelNodeId = `MULE_${idx+1}`;
+    // Peeling Mule Output (dropped downward)
+    const muleId = `MULE_${idx+1}`;
     nodes.push({
-      id: peelNodeId,
+      id: muleId,
       x: hop.x,
-      y: 330 + (idx % 2 === 0 ? 0 : 35),
+      y: 175 + (idx % 2 === 0 ? 0 : 20),
       label: `Mule Peel #${idx+1}`,
       stage: 'stage2',
+      zone: 'peeling',
       btc: hop.peelBtc,
+      inDeg: '1',
       outDeg: '0 (Extracted)',
       risk: '89.5%',
-      type: 'Peeled Laundered Cash'
+      type: 'Peeled Laundered Cash',
+      mech: 'Peel Comb Extraction'
     });
-    edges.push({ from: hop.id, to: peelNodeId, stage: 'stage2', flow: hop.peelBtc, isPeel: true });
+    edges.push({ from: hop.id, to: muleId, stage: 'stage2', zone: 'peeling', flow: hop.peelBtc, isPeel: true });
 
     // Forwarding change edge to next hop
     if (idx < peelHops.length - 1) {
-      edges.push({ from: hop.id, to: peelHops[idx+1].id, stage: 'stage2', flow: peelHops[idx+1].btc });
+      edges.push({ from: hop.id, to: peelHops[idx+1].id, stage: 'stage2', zone: 'peeling', flow: peelHops[idx+1].btc });
     }
   });
 
-  // Stage 3: Exchange Cash-Out Deposit
-  const cashOut = { id: 'EXCH_DEPOSIT', x: 930, y: 200, label: 'Exchange Deposit Wallet', stage: 'stage3', btc: '12.10 BTC', outDeg: '0 (Fiat Cash-Out)', risk: '93.8%', type: 'Liquidation Point' };
+  // Stage 3 Cash-Out Liquidation Deposit
+  const cashOut = { id: 'EXCH_DEPOSIT', x: 925, y: 105, label: 'Exchange Deposit Wallet', stage: 'stage3', zone: 'peeling', btc: '12.10 BTC', inDeg: '1', outDeg: '0 (Fiat Liquidation)', risk: '93.8%', type: 'Liquidation Off-Ramp', mech: 'Deposit Termination' };
   nodes.push(cashOut);
-  edges.push({ from: 'P7', to: 'EXCH_DEPOSIT', stage: 'stage3', flow: '12.10 BTC' });
+  edges.push({ from: 'P7', to: 'EXCH_DEPOSIT', stage: 'stage3', zone: 'peeling', flow: '12.10 BTC' });
 
-  // Commercial Batching Subgraph (Exchange Star Broadcast Hub)
-  const batchHub = { id: 'BATCH_HUB', x: 650, y: 440, label: 'Commercial Exchange Hot Wallet (Coinbase/Binance)', stage: 'batching', btc: '342.8 BTC', outDeg: '452 Outputs Batch', risk: '2.1%', type: 'Legitimate Hub' };
+  // -------------------------------------------------------------
+  // ZONE B: Legitimate Commercial Batching Star Hub (y: 260 to 520)
+  // -------------------------------------------------------------
+  const batchHub = {
+    id: 'BATCH_HUB',
+    x: 520,
+    y: 395,
+    label: 'Coinbase/Binance Hot Wallet',
+    stage: 'batching',
+    zone: 'batching',
+    btc: '342.80 BTC ($15.4M)',
+    inDeg: '2 Inflow Feeds',
+    outDeg: '452 Parallel Outputs',
+    risk: '0.8%',
+    type: 'Legitimate Exchange Hub',
+    mech: '1-to-N Broad Star Hub'
+  };
   nodes.push(batchHub);
 
-  for (let i = 1; i <= 8; i++) {
-    const angle = (i / 8) * Math.PI * 0.9 + 0.05 * Math.PI;
-    const bx = batchHub.x + Math.cos(angle) * 110;
-    const by = batchHub.y + Math.sin(angle) * 60;
-    const pId = `PAYOUT_${i}`;
+  // 16 customer payout addresses in radial constellation around the hub
+  const payoutCount = 16;
+  for (let i = 0; i < payoutCount; i++) {
+    const angle = (i / payoutCount) * Math.PI * 2;
+    const rx = 340;
+    const ry = 88;
+    const px = batchHub.x + Math.cos(angle) * rx;
+    const py = batchHub.y + Math.sin(angle) * ry;
+    const pId = `OUT_${i+1}`;
+    const btcVal = (0.15 + (i * 0.17) % 2.1).toFixed(2);
     nodes.push({
       id: pId,
-      x: bx,
-      y: by,
-      label: `Customer Payout #${i}`,
+      x: px,
+      y: py,
+      label: `Customer Payout #${i+1}`,
       stage: 'batching',
-      btc: `${(Math.random() * 0.8 + 0.1).toFixed(2)} BTC`,
-      outDeg: '1',
-      risk: '0.8%',
-      type: 'Licit Payout Output'
+      zone: 'batching',
+      btc: `${btcVal} BTC`,
+      inDeg: '1',
+      outDeg: '0 (Retail Wallet)',
+      risk: '0.5%',
+      type: 'Legitimate Recipient',
+      mech: 'Star Output Leaf'
     });
-    edges.push({ from: 'BATCH_HUB', to: pId, stage: 'batching', flow: 'Payout' });
+    edges.push({ from: 'BATCH_HUB', to: pId, stage: 'batching', zone: 'batching', flow: `${btcVal} BTC` });
   }
 
   // Hover state
   let hoveredNode = null;
-  let mousePos = { x: -100, y: -100 };
+  let mouseCanvasX = -100;
+  let mouseCanvasY = -100;
 
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
@@ -688,41 +719,60 @@ function initInteractiveBitcoinGraph() {
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
 
-  // Mouse move handler
+  // Synchronized Tooltip & Hover Detection
   canvas.addEventListener('mousemove', (e) => {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = 1050 / rect.width;
-    const scaleY = 560 / rect.height;
-    mousePos.x = (e.clientX - rect.left) * scaleX;
-    mousePos.y = (e.clientY - rect.top) * scaleY;
+    const scaleX = 1080 / rect.width;
+    const scaleY = 540 / rect.height;
+    mouseCanvasX = (e.clientX - rect.left) * scaleX;
+    mouseCanvasY = (e.clientY - rect.top) * scaleY;
 
     // Detect hovered node
     let found = null;
     for (let i = nodes.length - 1; i >= 0; i--) {
       const n = nodes[i];
-      // Skip if filtered out
-      if (currentStage !== 'all' && n.stage !== currentStage && currentStage !== 'batching') continue;
-      if (currentStage === 'batching' && n.stage !== 'batching') continue;
+      // Filter check
+      if (currentStage === 'peeling' && n.zone !== 'peeling') continue;
+      if (currentStage === 'batching' && n.zone !== 'batching') continue;
+      if (currentStage === 'stage2' && n.stage !== 'stage2') continue;
+      if (currentStage === 'stage3' && n.id !== 'EXCH_DEPOSIT' && n.id !== 'P7') continue;
 
-      const dist = Math.hypot(n.x - mousePos.x, n.y - mousePos.y);
-      if (dist <= 18) {
+      const hitDist = n.id === 'BATCH_HUB' ? 24 : 16;
+      if (Math.hypot(n.x - mouseCanvasX, n.y - mouseCanvasY) <= hitDist) {
         found = n;
         break;
       }
     }
 
     hoveredNode = found;
+
     if (hoveredNode) {
       hud.style.opacity = '1';
       hudTitle.textContent = `⚡ ${hoveredNode.label}`;
       hudType.textContent = hoveredNode.type;
-      hudStage.textContent = hoveredNode.stage === 'stage1' ? 'Stage 1: Illicit Inflow' :
-                             hoveredNode.stage === 'stage2' ? 'Stage 2: 7-Hop Peeling' :
-                             hoveredNode.stage === 'stage3' ? 'Stage 3: Exchange Cash-Out' : 'Commercial Batching Star';
+      hudMech.textContent = hoveredNode.mech || (hoveredNode.zone === 'batching' ? '1-to-N Star Broadcast' : '1-to-2 Peeling Comb');
+      hudMech.style.color = hoveredNode.zone === 'batching' ? '#60a5fa' : '#f87171';
+      hudStage.textContent = hoveredNode.zone === 'batching' ? 'Commercial Customer Withdrawal' :
+                             hoveredNode.stage === 'stage2' ? 'Stage 2: Peeling Hop' :
+                             hoveredNode.stage === 'stage3' ? 'Stage 3: Exchange Cash-Out' : 'Stage 1: Criminal Inflow';
       hudBtc.textContent = hoveredNode.btc;
-      hudDeg.textContent = hoveredNode.outDeg;
+      hudDeg.textContent = `${hoveredNode.inDeg} In / ${hoveredNode.outDeg}`;
       hudRisk.textContent = hoveredNode.risk;
-      hudRisk.style.color = hoveredNode.type.includes('Licit') ? '#059669' : '#dc2626';
+      hudRisk.style.color = hoveredNode.zone === 'batching' ? '#10b981' : '#ef4444';
+
+      // Synchronize floating tooltip position with mouse cursor
+      const hudW = 310;
+      const hudH = 190;
+      let left = e.clientX - rect.left + 18;
+      let top = e.clientY - rect.top + 15;
+      if (left + hudW > rect.width) {
+        left = e.clientX - rect.left - hudW - 18;
+      }
+      if (top + hudH > rect.height) {
+        top = e.clientY - rect.top - hudH - 15;
+      }
+      hud.style.left = `${Math.max(10, left)}px`;
+      hud.style.top = `${Math.max(10, top)}px`;
     } else {
       hud.style.opacity = '0';
     }
@@ -735,80 +785,128 @@ function initInteractiveBitcoinGraph() {
 
   // Animated Particle Flow
   const particles = [];
-  for (let i = 0; i < 35; i++) {
+  for (let i = 0; i < 45; i++) {
     particles.push({
       edgeIdx: Math.floor(Math.random() * edges.length),
       t: Math.random(),
-      speed: 0.006 + Math.random() * 0.008
+      speed: 0.007 + Math.random() * 0.009
     });
   }
 
   // Animation Loop
+  let pulseTimer = 0;
   function draw() {
+    pulseTimer += 0.03;
     const rect = canvas.getBoundingClientRect();
     const w = rect.width;
     const h = rect.height;
 
     ctx.clearRect(0, 0, w, h);
 
-    // Coordinate scale
-    const sx = w / 1050;
-    const sy = h / 560;
+    const sx = w / 1080;
+    const sy = h / 540;
 
-    // Helper to get node by id
     const nodeMap = {};
     nodes.forEach(n => { nodeMap[n.id] = n; });
 
-    // Draw Edges
-    edges.forEach((edge, idx) => {
+    // =========================================================
+    // 1. Draw Dual-Zone Demarcation Containers
+    // =========================================================
+    // Zone A: Laundering Peeling Chain
+    const zoneADim = (currentStage === 'batching');
+    ctx.save();
+    ctx.fillStyle = zoneADim ? 'rgba(254, 242, 242, 0.25)' : 'rgba(254, 242, 242, 0.85)';
+    ctx.strokeStyle = zoneADim ? '#f1f5f9' : '#fecaca';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(14 * sx, 14 * sy, (1080 - 28) * sx, (220) * sy, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    // Zone A Label Badge
+    ctx.fillStyle = zoneADim ? '#94a3b8' : '#991b1b';
+    ctx.font = 'bold 12px Inter';
+    ctx.fillText('🔴 ZONE A: ILLICIT MONEY LAUNDERING (9-STAGE PEELING COMB) — Depth: 7 hops | Out-Degree: 2 | AML Risk: 96.4%', 26 * sx, 34 * sy);
+    ctx.restore();
+
+    // Zone B: Commercial Batching Star Hub
+    const zoneBDim = (currentStage === 'peeling' || currentStage === 'stage2' || currentStage === 'stage3');
+    ctx.save();
+    ctx.fillStyle = zoneBDim ? 'rgba(239, 246, 255, 0.25)' : 'rgba(239, 246, 255, 0.9)';
+    ctx.strokeStyle = zoneBDim ? '#f1f5f9' : '#bfdbfe';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(14 * sx, 246 * sy, (1080 - 28) * sx, (278) * sy, 10);
+    ctx.fill();
+    ctx.stroke();
+
+    // Zone B Label Badge & Metrics Callout
+    ctx.fillStyle = zoneBDim ? '#94a3b8' : '#1e40af';
+    ctx.font = 'bold 12px Inter';
+    ctx.fillText('🔵 ZONE B: LEGITIMATE COMMERCIAL BATCHING (EXCHANGE STAR HUB) — Depth: 1 hop | Out-Degree: 452 outputs | Risk: 0.8%', 26 * sx, 268 * sy);
+
+    // Zone B Explanatory Pill
+    if (!zoneBDim) {
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = '11px Inter';
+      ctx.fillText('💡 Commercial Pattern: 1 Hot Wallet broadcasts 452 retail customer payouts in 1 low-fee block. Star hub geometry (0% anti-structuring evasion).', 26 * sx, 286 * sy);
+    }
+    ctx.restore();
+
+    // =========================================================
+    // 2. Draw Transaction Edges
+    // =========================================================
+    edges.forEach(edge => {
       const fromNode = nodeMap[edge.from];
       const toNode = nodeMap[edge.to];
       if (!fromNode || !toNode) return;
 
-      const isFiltered = (currentStage !== 'all' && edge.stage !== currentStage);
-      const isBatching = edge.stage === 'batching';
-      if (currentStage === 'batching' && !isBatching) return;
-      if (currentStage !== 'all' && currentStage !== 'batching' && isBatching) return;
+      const isBatching = edge.zone === 'batching';
+      const isPeelingZone = edge.zone === 'peeling';
+
+      let isDim = false;
+      if (currentStage === 'batching' && !isBatching) isDim = true;
+      if ((currentStage === 'peeling' || currentStage === 'stage2' || currentStage === 'stage3') && isBatching) isDim = true;
+      if (currentStage === 'stage2' && edge.stage !== 'stage2') isDim = true;
+      if (currentStage === 'stage3' && edge.stage !== 'stage3') isDim = true;
+
+      const isHoverConnected = hoveredNode && (hoveredNode.id === fromNode.id || hoveredNode.id === toNode.id);
 
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(fromNode.x * sx, fromNode.y * sy);
       ctx.lineTo(toNode.x * sx, toNode.y * sy);
 
-      if (isFiltered) {
+      if (isDim) {
         ctx.strokeStyle = '#f1f5f9';
         ctx.lineWidth = 1;
-      } else if (edge.isPeel) {
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([4, 4]);
       } else if (isBatching) {
-        ctx.strokeStyle = '#93c5fd';
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = isHoverConnected ? '#1d4ed8' : '#60a5fa';
+        ctx.lineWidth = isHoverConnected ? 2.5 : 1.5;
+      } else if (edge.isPeel) {
+        ctx.strokeStyle = isHoverConnected ? '#d97706' : '#f59e0b';
+        ctx.lineWidth = isHoverConnected ? 2.5 : 1.8;
+        ctx.setLineDash([4, 4]);
       } else {
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = isHoverConnected ? '#b91c1c' : '#ef4444';
+        ctx.lineWidth = isHoverConnected ? 3.5 : 2.5;
       }
       ctx.stroke();
       ctx.restore();
-
-      // Flow label if hovered
-      if (hoveredNode && (hoveredNode.id === fromNode.id || hoveredNode.id === toNode.id)) {
-        ctx.save();
-        const midX = ((fromNode.x + toNode.x) / 2) * sx;
-        const midY = ((fromNode.y + toNode.y) / 2) * sy;
-        ctx.fillStyle = '#0f172a';
-        ctx.font = '10px Inter';
-        ctx.fillText(edge.flow, midX, midY - 6);
-        ctx.restore();
-      }
     });
 
-    // Draw Animated Flow Particles
+    // =========================================================
+    // 3. Draw Animated Particle Pulses Along Edges
+    // =========================================================
     particles.forEach(p => {
       const edge = edges[p.edgeIdx];
       if (!edge) return;
-      if (currentStage !== 'all' && edge.stage !== currentStage) return;
+
+      const isBatching = edge.zone === 'batching';
+      let isDim = false;
+      if (currentStage === 'batching' && !isBatching) isDim = true;
+      if ((currentStage === 'peeling' || currentStage === 'stage2' || currentStage === 'stage3') && isBatching) isDim = true;
+      if (isDim) return;
 
       p.t += p.speed;
       if (p.t > 1) p.t = 0;
@@ -822,63 +920,82 @@ function initInteractiveBitcoinGraph() {
 
       ctx.save();
       ctx.beginPath();
-      ctx.arc(px, py, edge.stage === 'batching' ? 2.5 : 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = edge.stage === 'batching' ? '#2563eb' : edge.isPeel ? '#d97706' : '#dc2626';
+      ctx.arc(px, py, isBatching ? 2.8 : 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = isBatching ? '#2563eb' : edge.isPeel ? '#d97706' : '#dc2626';
       ctx.shadowColor = ctx.fillStyle;
       ctx.shadowBlur = 6;
       ctx.fill();
       ctx.restore();
     });
 
-    // Draw Nodes
+    // =========================================================
+    // 4. Draw Nodes with Concentric Rings and Badges
+    // =========================================================
     nodes.forEach(n => {
-      const isFiltered = (currentStage !== 'all' && n.stage !== currentStage);
-      const isBatching = n.stage === 'batching';
-      if (currentStage === 'batching' && !isBatching) return;
-      if (currentStage !== 'all' && currentStage !== 'batching' && isBatching) return;
+      const isBatching = n.zone === 'batching';
+      let isDim = false;
+      if (currentStage === 'batching' && !isBatching) isDim = true;
+      if ((currentStage === 'peeling' || currentStage === 'stage2' || currentStage === 'stage3') && isBatching) isDim = true;
+      if (currentStage === 'stage2' && n.stage !== 'stage2') isDim = true;
+      if (currentStage === 'stage3' && n.id !== 'EXCH_DEPOSIT' && n.id !== 'P7') isDim = true;
 
       const isHovered = (hoveredNode && hoveredNode.id === n.id);
+      const isHub = (n.id === 'BATCH_HUB');
       const nx = n.x * sx;
       const ny = n.y * sy;
-      const r = n.id === 'BATCH_HUB' ? 16 : n.id === 'AGG' || n.id === 'EXCH_DEPOSIT' ? 14 : n.stage === 'stage2' && !n.id.startsWith('MULE') ? 11 : 8;
+      const r = isHub ? 20 : (n.id === 'AGG' || n.id === 'EXCH_DEPOSIT') ? 14 : (n.stage === 'stage2' && !n.id.startsWith('MULE')) ? 11 : 7;
 
       ctx.save();
-      ctx.beginPath();
-      ctx.arc(nx, ny, isHovered ? r + 4 : r, 0, Math.PI * 2);
 
-      if (isFiltered) {
+      // Pulsing glow ring around Commercial Batching Hub
+      if (isHub && !isDim) {
+        const pulseR = r + 6 + Math.sin(pulseTimer) * 4;
+        ctx.beginPath();
+        ctx.arc(nx, ny, pulseR, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(37, 99, 235, 0.45)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      ctx.beginPath();
+      ctx.arc(nx, ny, isHovered ? r + 5 : r, 0, Math.PI * 2);
+
+      if (isDim) {
         ctx.fillStyle = '#e2e8f0';
         ctx.strokeStyle = '#cbd5e1';
-      } else if (n.id === 'BATCH_HUB') {
-        ctx.fillStyle = '#2563eb';
-        ctx.strokeStyle = '#1d4ed8';
+      } else if (isHub) {
+        ctx.fillStyle = '#1d4ed8';
+        ctx.strokeStyle = '#1e40af';
       } else if (isBatching) {
-        ctx.fillStyle = '#60a5fa';
-        ctx.strokeStyle = '#3b82f6';
-      } else if (n.stage === 'stage1') {
-        ctx.fillStyle = '#dc2626';
-        ctx.strokeStyle = '#991b1b';
+        ctx.fillStyle = '#3b82f6';
+        ctx.strokeStyle = '#2563eb';
       } else if (n.stage === 'stage3') {
         ctx.fillStyle = '#059669';
         ctx.strokeStyle = '#047857';
       } else if (n.id.startsWith('MULE')) {
         ctx.fillStyle = '#f59e0b';
         ctx.strokeStyle = '#d97706';
+      } else if (n.id === 'AGG') {
+        ctx.fillStyle = '#dc2626';
+        ctx.strokeStyle = '#991b1b';
       } else {
         ctx.fillStyle = '#ef4444';
         ctx.strokeStyle = '#b91c1c';
       }
 
-      ctx.lineWidth = isHovered ? 3 : 1.5;
+      ctx.lineWidth = isHovered ? 3.5 : 1.5;
+      ctx.shadowColor = isHovered ? 'rgba(0,0,0,0.3)' : 'transparent';
+      ctx.shadowBlur = isHovered ? 8 : 0;
       ctx.fill();
       ctx.stroke();
 
-      // Node label
-      if (!isFiltered) {
-        ctx.fillStyle = '#1e293b';
-        ctx.font = isHovered ? 'bold 11px Inter' : '10px Inter';
+      // Node text labels
+      if (!isDim) {
+        ctx.fillStyle = '#0f172a';
+        ctx.font = isHub ? 'bold 12px Inter' : isHovered ? 'bold 11px Inter' : '10px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText(n.id, nx, ny + r + 13);
+        const labelY = isHub ? ny + r + 16 : ny + r + 12;
+        ctx.fillText(n.id, nx, labelY);
       }
       ctx.restore();
     });
@@ -889,6 +1006,7 @@ function initInteractiveBitcoinGraph() {
   if (bitcoinGraphAnimId) cancelAnimationFrame(bitcoinGraphAnimId);
   draw();
 }
+
 
 // =============================================================
 // CHAPTER 6: LIVE INTERACTIVE DEGREE DISTRIBUTION CHART
