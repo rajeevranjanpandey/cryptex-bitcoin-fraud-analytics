@@ -14,7 +14,7 @@ import numpy as np
 from src.data_loader import load_data, get_temporal_splits
 from src.feature_selection import ensemble_feature_selection
 from src.models import get_base_models, tune_lightgbm_optuna, tune_xgboost_optuna
-from src.drift_experiment import compute_temporal_psi, evaluate_static_models, evaluate_continuous_retraining
+from src.drift_experiment import compute_temporal_psi, evaluate_static_models, evaluate_continuous_retraining, select_threshold_from_validation
 from src.in_context_model import run_in_context_ablation
 from src.cost_evaluator import add_costs_to_results
 from src.explainability import run_shap_analysis
@@ -78,6 +78,14 @@ def run_full_pipeline(optuna_trials=20, context_size=2000):
     
     best_lgbm, best_lgbm_params = tune_lightgbm_optuna(X_train, y_train, X_val, y_val, n_trials=optuna_trials)
     best_xgb, best_xgb_params = tune_xgboost_optuna(X_train, y_train, X_val, y_val, n_trials=optuna_trials)
+
+    tune_probs = best_lgbm.predict_proba(X_val)[:, 1]
+    threshold_selection = select_threshold_from_validation(y_val, tune_probs)
+    decision_threshold = threshold_selection["threshold"]
+    print(
+        f"Selected decision threshold on tune split only: {decision_threshold:.2f} "
+        f"(F1={threshold_selection['f1']:.4f}, Precision={threshold_selection['precision']:.4f}, Recall={threshold_selection['recall']:.4f})"
+    )
     
     with open(os.path.join(RESULTS_DIR, "best_hyperparameters.json"), "w") as f:
         json.dump({"LightGBM": best_lgbm_params, "XGBoost": best_xgb_params}, f, indent=2)
@@ -89,16 +97,20 @@ def run_full_pipeline(optuna_trials=20, context_size=2000):
     
     # 5. Static Models Sequential Evaluation
     print("\n[STEP 5/7] Evaluating Static Baselines & Continuous Retraining (Steps 40..49)...")
-    static_results_df, fitted_models = evaluate_static_models(train_df, test_df, selected_features, base_models)
+    static_results_df, fitted_models = evaluate_static_models(
+        train_df, test_df, selected_features, base_models, decision_threshold=decision_threshold
+    )
     
     # Continuous Retraining ("Expensive Option")
     retrained_results_df = evaluate_continuous_retraining(
-        df, range(40, 50), selected_features, best_lgbm_params=best_lgbm_params
+        df, range(40, 50), selected_features, best_lgbm_params=best_lgbm_params, decision_threshold=decision_threshold
     )
     
     # 6. In-Context Exemplar Model & 4-way Ablation Study (Topic 1 Core Innovation)
     print("\n[STEP 6/7] Running In-Context Exemplar Selection & 4-Way Ablation Study...")
-    ablation_results_df = run_in_context_ablation(df, range(40, 50), selected_features, context_size=context_size)
+    ablation_results_df = run_in_context_ablation(
+        df, range(40, 50), selected_features, context_size=context_size, decision_threshold=decision_threshold
+    )
     
     # Combine all results
     all_results_df = pd.concat([static_results_df, retrained_results_df, ablation_results_df], ignore_index=True)
@@ -134,6 +146,7 @@ def run_full_pipeline(optuna_trials=20, context_size=2000):
             "optuna_trials": optuna_trials,
             "cost_fn": 10000.0,
             "cost_fp": 100.0,
+            "decision_threshold": decision_threshold,
             "runtime_seconds": round(time.time() - start_time, 2)
         }
     }

@@ -41,19 +41,23 @@ def add_costs_to_results(results_df, c_fn=DEFAULT_C_FN, c_fp=DEFAULT_C_FP):
     """
     df = results_df.copy()
     
-    # TP = recall * num_illicit
-    tp = np.round(df["recall"] * df["num_illicit"]).astype(int)
-    fn = df["num_illicit"] - tp
-    
-    # From precision = TP / (TP + FP) => FP = TP * (1 - prec) / prec (when prec > 0)
-    prec = df["precision"].values
-    fp = np.zeros_like(tp)
-    for i in range(len(df)):
-        if prec[i] > 0 and tp[i] > 0:
-            fp[i] = int(np.round(tp[i] * (1.0 - prec[i]) / prec[i]))
-        else:
-            # Fallback estimation based on average probability or threshold
-            fp[i] = int(np.round((df["total_tx"].iloc[i] - df["num_illicit"].iloc[i]) * 0.02))
+    if all(col in df.columns for col in ["tp", "fp", "fn", "tn"]):
+        tp = df["tp"].astype(int).values
+        fp = df["fp"].astype(int).values
+        fn = df["fn"].astype(int).values
+    else:
+        # Backward-compatible fallback when confusion counts are unavailable.
+        tp = np.round(df["recall"] * df["num_illicit"]).astype(int)
+        fn = df["num_illicit"] - tp
+        
+        # From precision = TP / (TP + FP) => FP = TP * (1 - prec) / prec (when prec > 0)
+        prec = df["precision"].values
+        fp = np.zeros_like(tp)
+        for i in range(len(df)):
+            if prec[i] > 0 and tp[i] > 0:
+                fp[i] = int(np.round(tp[i] * (1.0 - prec[i]) / prec[i]))
+            else:
+                fp[i] = int(np.round((df["total_tx"].iloc[i] - df["num_illicit"].iloc[i]) * 0.02))
             
     df["tp"] = tp
     df["fn"] = fn
