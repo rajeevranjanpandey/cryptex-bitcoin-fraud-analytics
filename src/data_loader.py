@@ -12,6 +12,8 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 CLASSES_URL = "https://huggingface.co/datasets/SuodhanJ6/elliptic_txs_classes/resolve/main/elliptic_txs_classes.csv"
 FEATURES_URL = "https://huggingface.co/datasets/SuodhanJ6/elliptic_txs_features/resolve/main/elliptic_txs_features.csv"
 
+REQUIRED_TRANSACTION_COLUMNS = ["txId", "time_step"]
+
 def download_file(url: str, dest_path: str):
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     if os.path.exists(dest_path) and os.path.getsize(dest_path) > 0:
@@ -109,12 +111,68 @@ def prepare_labeled_dataset():
     print(f"\nCompleted! Saved {matched_count} labeled transactions to {labeled_path}")
     return labeled_path
 
-def load_data(filepath=None):
+def validate_dataframe_headers(df: pd.DataFrame):
+    missing = [c for c in REQUIRED_TRANSACTION_COLUMNS if c not in df.columns]
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}. Expected at least {REQUIRED_TRANSACTION_COLUMNS}.")
+    feature_cols = [c for c in df.columns if c.startswith("feat_")]
+    if not feature_cols:
+        raise ValueError("No feature columns found. Expected one or more columns with 'feat_' prefix.")
+
+def map_label_values(series: pd.Series) -> pd.Series:
+    normalized = series.astype(str).str.strip().str.lower()
+    mapping = {
+        "1": 1,
+        "illicit": 1,
+        "fraud": 1,
+        "true": 1,
+        "2": 0,
+        "0": 0,
+        "licit": 0,
+        "non-fraud": 0,
+        "non_fraud": 0,
+        "false": 0,
+        "unknown": np.nan,
+        "nan": np.nan,
+        "none": np.nan,
+        "": np.nan,
+    }
+    mapped = normalized.map(mapping)
+    numeric = pd.to_numeric(series, errors="coerce")
+    mapped = mapped.where(~mapped.isna(), numeric)
+    mapped = mapped.where(mapped.isin([0, 1]), np.nan)
+    return mapped
+
+def load_data(filepath=None, drop_unknown_labels=True):
     if filepath is None:
         filepath = os.path.join(DATA_DIR, "elliptic_labeled.csv")
     if not os.path.exists(filepath):
         prepare_labeled_dataset()
     df = pd.read_csv(filepath)
+    validate_dataframe_headers(df)
+
+    if "label" not in df.columns:
+        if "class" not in df.columns:
+            raise ValueError("Input data must contain either a 'label' column or a 'class' column.")
+        df["label"] = map_label_values(df["class"])
+    else:
+        df["label"] = map_label_values(df["label"])
+
+    df["time_step"] = pd.to_numeric(df["time_step"], errors="coerce")
+    if df["time_step"].isna().any():
+        raise ValueError("Found non-numeric values in 'time_step'.")
+    df["time_step"] = df["time_step"].astype(int)
+
+    if drop_unknown_labels:
+        before = len(df)
+        df = df[df["label"].isin([0, 1])].copy()
+        removed = before - len(df)
+        if removed > 0:
+            print(f"Dropped {removed} rows with unknown/unmapped labels from {os.path.basename(filepath)}.")
+    else:
+        df["label"] = df["label"].astype("Float64")
+    if drop_unknown_labels:
+        df["label"] = df["label"].astype(int)
     return df
 
 def get_temporal_splits(df):
@@ -124,11 +182,28 @@ def get_temporal_splits(df):
     - Tune / Val: Steps 35 to 39
     - Test: Steps 40 to 49
     """
-    train_df = df[df["time_step"] <= 34].copy()
-    tune_df = df[(df["time_step"] >= 35) & (df["time_step"] <= 39)].copy()
-    test_df = df[df["time_step"] >= 40].copy()
+    required_cols = ["time_step", "label"]
+    missing_cols = [c for c in required_cols if c not in df.columns]
+    if missing_cols:
+        raise ValueError(f"DataFrame missing required columns for split: {missing_cols}")
+
+    known_df = df[df["label"].isin([0, 1])].copy()
+
+    train_df = known_df[known_df["time_step"] <= 34].copy()
+    tune_df = known_df[(known_df["time_step"] >= 35) & (known_df["time_step"] <= 39)].copy()
+    test_df = known_df[(known_df["time_step"] >= 40) & (known_df["time_step"] <= 49)].copy()
     
-    feature_cols = [c for c in df.columns if c.startswith("feat_")]
+    feature_cols = [c for c in known_df.columns if c.startswith("feat_")]
+    feature_cols = sorted(
+        feature_cols,
+        key=lambda x: (0, int(x.split("_")[1])) if x.split("_")[1].isdigit() else (1, x)
+    )
+
+    if len(set(train_df.index).intersection(set(tune_df.index))) > 0 or len(set(train_df.index).intersection(set(test_df.index))) > 0 or len(set(tune_df.index).intersection(set(test_df.index))) > 0:
+        raise ValueError("Temporal split leakage detected: overlapping rows between train/tune/test sets.")
+    if (len(train_df) > 0 and len(tune_df) > 0 and train_df["time_step"].max() >= tune_df["time_step"].min()) or \
+       (len(tune_df) > 0 and len(test_df) > 0 and tune_df["time_step"].max() >= test_df["time_step"].min()):
+        raise ValueError("Temporal split boundaries overlap; chronological ordering violated.")
     
     return {
         "train": train_df,

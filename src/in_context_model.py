@@ -10,10 +10,10 @@ and runs the 4-way ablation study:
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import average_precision_score, recall_score, f1_score, precision_score
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.neighbors import NearestNeighbors
 from scipy.spatial.distance import cdist
+from src.drift_experiment import summarize_binary_predictions
 
 class InContextExemplarClassifier:
     """
@@ -101,7 +101,7 @@ class InContextExemplarClassifier:
         probs = clf.predict_proba(X_test)[:, 1]
         return probs, exemplar_df
 
-def run_in_context_ablation(all_df, test_steps_range, feature_cols, context_size=2000):
+def run_in_context_ablation(all_df, test_steps_range, feature_cols, context_size=2000, decision_threshold=0.5):
     """
     Runs the 4-way ablation study over test steps 40..49:
     - Random Context
@@ -131,22 +131,23 @@ def run_in_context_ablation(all_df, test_steps_range, feature_cols, context_size
             n_pos = sum(y_test == 1)
             
             probs, _ = model.predict_step(candidate_df, test_df, feature_cols, t)
-            preds = (probs >= 0.5).astype(int)
-            
-            auprc = average_precision_score(y_test, probs) if n_pos > 0 else 0.0
-            recall = recall_score(y_test, preds, zero_division=0)
-            precision = precision_score(y_test, preds, zero_division=0)
-            f1 = f1_score(y_test, preds, zero_division=0)
+            metrics = summarize_binary_predictions(y_test, probs, threshold=decision_threshold)
             
             all_results.append({
                 "method": method_name,
                 "strategy": strategy,
                 "category": "In-Context",
                 "time_step": int(t),
-                "auprc": float(auprc),
-                "recall": float(recall),
-                "precision": float(precision),
-                "f1": float(f1),
+                "threshold": float(decision_threshold),
+                "auprc": metrics["auprc"],
+                "roc_auc": metrics["roc_auc"],
+                "recall": metrics["recall"],
+                "precision": metrics["precision"],
+                "f1": metrics["f1"],
+                "tp": metrics["tp"],
+                "fp": metrics["fp"],
+                "fn": metrics["fn"],
+                "tn": metrics["tn"],
                 "avg_prob": float(np.mean(probs)),
                 "num_illicit": int(n_pos),
                 "total_tx": len(test_df)

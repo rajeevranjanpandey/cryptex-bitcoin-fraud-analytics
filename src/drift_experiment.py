@@ -8,9 +8,53 @@ Temporal Drift Experiment:
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import average_precision_score, recall_score, f1_score, precision_score
-import lightgbm as lgb
-import xgboost as xgb
+from sklearn.metrics import average_precision_score, recall_score, f1_score, precision_score, roc_auc_score, confusion_matrix
+try:
+    import lightgbm as lgb
+except Exception:  # pragma: no cover
+    lgb = None
+try:
+    import xgboost as xgb
+except Exception:  # pragma: no cover
+    xgb = None
+
+def select_threshold_from_validation(y_true, y_prob, thresholds=None):
+    """
+    Selects a decision threshold using validation-only labels and probabilities.
+    Returns threshold maximizing F1 (ties broken by higher precision).
+    """
+    if thresholds is None:
+        thresholds = np.linspace(0.05, 0.95, 91)
+    best = {"threshold": 0.5, "f1": -1.0, "precision": -1.0, "recall": -1.0}
+    for threshold in thresholds:
+        preds = (y_prob >= threshold).astype(int)
+        f1 = f1_score(y_true, preds, zero_division=0)
+        precision = precision_score(y_true, preds, zero_division=0)
+        recall = recall_score(y_true, preds, zero_division=0)
+        if (f1 > best["f1"]) or (np.isclose(f1, best["f1"]) and precision > best["precision"]):
+            best = {
+                "threshold": float(threshold),
+                "f1": float(f1),
+                "precision": float(precision),
+                "recall": float(recall),
+            }
+    return best
+
+def summarize_binary_predictions(y_true, probs, threshold=0.5):
+    preds = (probs >= threshold).astype(int)
+    tn, fp, fn, tp = confusion_matrix(y_true, preds, labels=[0, 1]).ravel()
+    n_pos = int(np.sum(y_true == 1))
+    return {
+        "auprc": float(average_precision_score(y_true, probs) if n_pos > 0 else 0.0),
+        "roc_auc": float(roc_auc_score(y_true, probs) if len(np.unique(y_true)) > 1 else 0.0),
+        "recall": float(recall_score(y_true, preds, zero_division=0)),
+        "precision": float(precision_score(y_true, preds, zero_division=0)),
+        "f1": float(f1_score(y_true, preds, zero_division=0)),
+        "tp": int(tp),
+        "fp": int(fp),
+        "fn": int(fn),
+        "tn": int(tn),
+    }
 
 def calculate_psi(expected, actual, num_bins=10, epsilon=1e-4):
     """
@@ -75,7 +119,7 @@ def compute_temporal_psi(df, top_features, ref_steps=range(1, 35)):
         
     return pd.DataFrame(psi_records)
 
-def evaluate_static_models(train_df, test_steps_df, feature_cols, models_dict):
+def evaluate_static_models(train_df, test_steps_df, feature_cols, models_dict, decision_threshold=0.5):
     """
     Evaluates static models (trained once on steps 1-34) sequentially across test steps 40..49.
     Returns DataFrame containing AUPRC, Recall, F1, and Precision per step per model.
@@ -101,21 +145,22 @@ def evaluate_static_models(train_df, test_steps_df, feature_cols, models_dict):
         
         for name, model in fitted_models.items():
             probs = model.predict_proba(X_test)[:, 1]
-            preds = (probs >= 0.5).astype(int)
-            
-            auprc = average_precision_score(y_test, probs) if n_pos > 0 else 0.0
-            recall = recall_score(y_test, preds, zero_division=0)
-            precision = precision_score(y_test, preds, zero_division=0)
-            f1 = f1_score(y_test, preds, zero_division=0)
+            metrics = summarize_binary_predictions(y_test, probs, threshold=decision_threshold)
             
             results.append({
                 "method": f"Static_{name}",
                 "category": "Static",
                 "time_step": int(t),
-                "auprc": float(auprc),
-                "recall": float(recall),
-                "precision": float(precision),
-                "f1": float(f1),
+                "threshold": float(decision_threshold),
+                "auprc": metrics["auprc"],
+                "roc_auc": metrics["roc_auc"],
+                "recall": metrics["recall"],
+                "precision": metrics["precision"],
+                "f1": metrics["f1"],
+                "tp": metrics["tp"],
+                "fp": metrics["fp"],
+                "fn": metrics["fn"],
+                "tn": metrics["tn"],
                 "avg_prob": float(np.mean(probs)),
                 "num_illicit": int(n_pos),
                 "total_tx": len(step_df)
@@ -123,12 +168,14 @@ def evaluate_static_models(train_df, test_steps_df, feature_cols, models_dict):
             
     return pd.DataFrame(results), fitted_models
 
-def evaluate_continuous_retraining(all_df, test_steps_range, feature_cols, best_lgbm_params=None):
+def evaluate_continuous_retraining(all_df, test_steps_range, feature_cols, best_lgbm_params=None, decision_threshold=0.5):
     """
     Evaluates the 'Expensive Option': at every test step t, retrains the model
     on all historical data from steps 1 to t-1.
     """
     print("Running Continuous Retraining Baseline (Retrained at each step t in 40..49)...")
+    if lgb is None:
+        raise ImportError("lightgbm is required for continuous retraining evaluation.")
     results = []
     
     for t in sorted(test_steps_range):
@@ -152,21 +199,22 @@ def evaluate_continuous_retraining(all_df, test_steps_range, feature_cols, best_
         retrained_model.fit(X_train_hist, y_train_hist)
         
         probs = retrained_model.predict_proba(X_test)[:, 1]
-        preds = (probs >= 0.5).astype(int)
-        
-        auprc = average_precision_score(y_test, probs) if n_pos > 0 else 0.0
-        recall = recall_score(y_test, preds, zero_division=0)
-        precision = precision_score(y_test, preds, zero_division=0)
-        f1 = f1_score(y_test, preds, zero_division=0)
+        metrics = summarize_binary_predictions(y_test, probs, threshold=decision_threshold)
         
         results.append({
             "method": "Continuous_Retraining_LGBM",
             "category": "Retrained",
             "time_step": int(t),
-            "auprc": float(auprc),
-            "recall": float(recall),
-            "precision": float(precision),
-            "f1": float(f1),
+            "threshold": float(decision_threshold),
+            "auprc": metrics["auprc"],
+            "roc_auc": metrics["roc_auc"],
+            "recall": metrics["recall"],
+            "precision": metrics["precision"],
+            "f1": metrics["f1"],
+            "tp": metrics["tp"],
+            "fp": metrics["fp"],
+            "fn": metrics["fn"],
+            "tn": metrics["tn"],
             "avg_prob": float(np.mean(probs)),
             "num_illicit": int(n_pos),
             "total_tx": len(test_step_df)

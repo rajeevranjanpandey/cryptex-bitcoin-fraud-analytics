@@ -282,6 +282,42 @@ Open **[http://localhost:8080](http://localhost:8080)** in your browser to explo
 
 ---
 
+## ✅ 2026 Audit Update (Pipeline Guardrails + Workbench Notebook)
+
+To make the project reproducible and safer for forward-in-time evaluation, the pipeline now includes:
+
+- **CSV schema validation** for required columns (`txId`, `time_step`, `feat_*`) before training.
+- **Explicit label normalization** for illicit/licit/unknown values.
+- **Unknown labels excluded from ground-truth evaluation** (never treated as fraud/non-fraud truth).
+- **Chronological split guardrails** (train: 1–34, tune: 35–39, test: 40–49, with overlap checks).
+- **Threshold selection from tuning split only** (no final-test leakage).
+- **Per-step confusion-matrix counts** (`tp`, `fp`, `fn`, `tn`) plus ranking metrics (`AUPRC`, `ROC-AUC`) in exported outputs.
+- **DataRobot Workbench notebook** for user-uploaded Elliptic files:
+  - [`notebooks/datarobot_workbench_elliptic_workflow.ipynb`](notebooks/datarobot_workbench_elliptic_workflow.ipynb)
+
+### New Local Validation Tests
+
+Run focused tests:
+
+```bash
+pytest tests/test_pipeline_guardrails.py
+```
+
+These tests cover:
+- data loading and header validation,
+- label mapping and unknown-label behavior,
+- chronological split integrity / leakage prevention,
+- threshold selection on validation data,
+- evaluation output completeness (including confusion matrix fields).
+
+### Provenance and Execution Notes
+
+- Existing files under `artifacts/results/` and `artifacts/figures/` are retained, but should be reused only when their generating configuration is verified in your environment.
+- In this repository update, no DataRobot credentials were used and no DataRobot runs were claimed.
+- Final benchmark regeneration (full pipeline, full datasets, and Workbench execution) must be run by the user in their target environment with uploaded Elliptic CSV files.
+
+---
+
 ## 📄 Academic Citation & Team Acknowledgments
 
 **Academic Course**: MAI 601 Data Mining, Canadian University Dubai  
